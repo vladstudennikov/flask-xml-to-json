@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from personal_data import FullPersonalData
 
 app = Flask(__name__, static_folder='static')
 
 @app.route('/')
 def index():
-    return send_from_directory(app.static_folder, 'index.html')
+    return render_template("index.html")
 
 @app.route('/xml-to-json', methods=['POST'])
 def xml_to_json():
