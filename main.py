@@ -1,17 +1,20 @@
-from flask import Flask, request, jsonify # type: ignore
-from personal_data import PersonalData, Address, Work, FullPersonalData
+from flask import Flask, request, jsonify, send_from_directory
+from personal_data import FullPersonalData
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+
+@app.route('/')
+def index():
+    return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/xml-to-json', methods=['POST'])
 def xml_to_json():
     xml_data = request.data.decode('utf-8')
     try:
         full_personal_data = FullPersonalData.xml_to_json(xml_data)
-        return jsonify(full_personal_data), 200, {'Content-Type': 'application/json'}
+        return jsonify(full_personal_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
 
 @app.route('/json-to-xml', methods=['POST'])
 def json_to_xml():
@@ -21,7 +24,6 @@ def json_to_xml():
         return xml_data, 200, {'Content-Type': 'application/xml'}
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
     
 if __name__ == '__main__':  
     app.run(debug=True)
