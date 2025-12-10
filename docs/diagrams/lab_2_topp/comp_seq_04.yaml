@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Browser as Web Browser
+    participant Flask as Flask App (main.py)
+    participant PD as personal_data.py
+    participant Libs as personal_data_libs.py
+    participant Tmpl as templates/index.html
+ 
+    Browser->>Flask: GET /
+    activate Flask
+ 
+    Flask->>PD: get_personal_data()
+    activate PD
+ 
+    PD->>Libs: call helper functions
+    activate Libs
+    Libs-->>PD: return data structures
+    deactivate Libs
+ 
+    PD-->>Flask: personal data dict
+    deactivate PD
+ 
+    Flask->>Tmpl: render_template(data)
+    activate Tmpl
+    Tmpl-->>Flask: HTML response
+    deactivate Tmpl
+ 
+    Flask-->>Browser: HTTP 200 OK + HTML
+    deactivate Flask
+
+graph TD
+    %% Nodes
+    Browser[Web Browser]:::client
+    FlaskApp[Flask Application<br/>main.py]:::server
+    PDService[Personal Data Service<br/>personal_data.py]:::module
+    LibHelpers[Library Helpers<br/>personal_data_libs.py]:::module
+    Template[HTML Template<br/>templates/index.html]:::resource
+    Static[Static Files<br/>static/*.css, *.js]:::resource
+ 
+    %% Relationships
+    Browser -->|HTTP request| FlaskApp
+    FlaskApp -->|invokes| PDService
+    PDService -->|uses| LibHelpers
+    FlaskApp -->|renders| Template
+    FlaskApp -->|serves| Static
+ 
+    %% Styling
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px
+    classDef server fill:#bbf,stroke:#333,stroke-width:2px
+    classDef module fill:#dfd,stroke:#333,stroke-width:2px
+    classDef resource fill:#ffd,stroke:#333,stroke-width:2px

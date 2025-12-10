@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant User
+    participant Browser
+    participant FrontEnd as Front‑End (React/Vue/…)
+    participant API as API Gateway
+    participant Auth as Auth Service
+    participant Service as Business Service
+    participant DB as Database
+
+    User->>Browser: Open application URL
+    Browser->>FrontEnd: Load SPA
+    FrontEnd->>API: GET /auth/status (cookie/token)
+    API->>Auth: Validate session
+    Auth-->>API: Session valid / user info
+    API-->>FrontEnd: Authenticated
+
+    Note over User,FrontEnd: User is now logged‑in
+
+    User->>FrontEnd: Click “Create Item”
+    FrontEnd->>API: POST /items (payload)
+    API->>Auth: Verify token
+    Auth-->>API: Token ok
+    API->>Service: createItem(payload)
+    Service->>DB: INSERT new item
+    DB-->>Service: Success (id)
+    Service-->>API: New item data
+    API-->>FrontEnd: 201 Created (item)
+
+    FrontEnd->>User: Show new item in UI

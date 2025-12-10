@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant UI as Web Client
+    participant WebApp as Flask Backend (main.py)
+    participant PersonalData as personal_data.py
+    participant HelperLib as personal_data_libs.py
+    participant HTMLView as templates/index.html
+ 
+    UI->>WebApp: Request homepage (GET /)
+    activate WebApp
+ 
+    WebApp->>PersonalData: retrieve_personal_information()
+    activate PersonalData
+ 
+    PersonalData->>HelperLib: access utility functions
+    activate HelperLib
+    HelperLib-->>PersonalData: formatted data payload
+    deactivate HelperLib
+ 
+    PersonalData-->>WebApp: complete user profile
+    deactivate PersonalData
+ 
+    WebApp->>HTMLView: generate_view(profile_data)
+    activate HTMLView
+    HTMLView-->>WebApp: finalized markup
+    deactivate HTMLView
+ 
+    WebApp-->>UI: Success response with page
+    deactivate WebApp
+
+---
+
+graph TD
+    %% Architecture Components
+    WebClient[Web Client Interface]:::client
+    Backend[Flask Backend Service<br/>main.py]:::server
+    ProfileService[Profile Data Handler<br/>personal_data.py]:::module
+    HelperUtils[Support Libraries<br/>personal_data_libs.py]:::module
+    PageTemplate[Page Template Engine<br/>templates/index.html]:::resource
+    StaticContent[Frontend Assets<br/>static/*.css, *.js]:::resource
+ 
+    %% Interaction Flow
+    WebClient -->|initiates request to| Backend
+    Backend -->|queries| ProfileService
+    ProfileService -->|utilizes| HelperUtils
+    Backend -->|compiles with| PageTemplate
+    Backend -->|provides| StaticContent
+ 
+    %% Visual Styling
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px
+    classDef server fill:#bbf,stroke:#333,stroke-width:2px
+    classDef module fill:#dfd,stroke:#333,stroke-width:2px
+    classDef resource fill:#ffd,stroke:#333,stroke-width:2px

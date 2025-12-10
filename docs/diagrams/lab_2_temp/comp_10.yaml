@@ -1,0 +1,31 @@
+graph TD
+    %% ----- Client side -----
+    subgraph Client
+        UI[Web UI / SPA]
+        Mobile[Mobile App]
+    end
+
+    %% ----- Server side -----
+    subgraph Server
+        Gateway[API Gateway]
+        Service[Application Service Layer]
+        Auth[Authentication Service]
+        DB[(Database)]
+        Cache[(Cache)]
+        Ext[External Services]
+    end
+
+    %% ----- Connections -----
+    UI -->|REST/GraphQL| Gateway
+    Mobile -->|REST/GraphQL| Gateway
+    Gateway --> Service
+    Service --> Auth
+    Service --> DB
+    Service --> Cache
+    Service --> Ext
+    Auth --> DB
+    Auth --> Cache
+
+    %% ----- Optional styling -----
+    style Client fill:#E3F2FD,stroke:#1976D2,stroke-width:2px
+    style Server fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px

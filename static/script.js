@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const jsonToXmlBtn = document.getElementById('json-to-xml-btn');
     const copyXmlBtn = document.getElementById('copy-xml-btn');
 
+    const dataTypeSelect = document.getElementById('dataType');
+
     const toggleSpinner = (btn, show) => {
         const spinner = btn.querySelector('.spinner-border');
         if (show) {
@@ -23,8 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     xmlToJsonBtn.addEventListener('click', () => {
         const xmlData = xmlInput.value;
         if (xmlData) {
+            const dataType = dataTypeSelect.value;
             toggleSpinner(xmlToJsonBtn, true);
-            fetch('/xml-to-json', {
+            fetch(`/${dataType}/xml-to-json`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/xml'
@@ -33,7 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(response => response.json())
             .then(data => {
-                jsonOutput.value = JSON.stringify(data, null, 2);
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    jsonOutput.value = `Error: ${data.error}`;
+                } else {
+                    jsonOutput.value = JSON.stringify(data, null, 2);
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -48,21 +56,27 @@ document.addEventListener('DOMContentLoaded', () => {
     jsonToXmlBtn.addEventListener('click', () => {
         const jsonData = jsonInput.value;
         if (jsonData) {
+            const dataType = dataTypeSelect.value;
             toggleSpinner(jsonToXmlBtn, true);
-            fetch('/json-to-xml', {
+            fetch(`/${dataType}/json-to-xml`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: jsonData
             })
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error) });
+                }
+                return response.text();
+            })
             .then(data => {
                 xmlOutput.value = data;
             })
             .catch(error => {
                 console.error('Error:', error);
-                xmlOutput.value = 'Error converting JSON to XML.';
+                xmlOutput.value = `Error: ${error.message}`;
             })
             .finally(() => {
                 toggleSpinner(jsonToXmlBtn, false);

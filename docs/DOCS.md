@@ -12,7 +12,7 @@ The scope of this project is to provide a simple and efficient tool for converti
 -   Conversion of XML data to JSON data.
 -   Conversion of JSON data to XML data.
 -   A web-based user interface for easy interaction with the conversion tool.
--   Support for a specific data model (`FullPersonalData`).
+-   Support for two specific data models (`FullPersonalData` and `ITData`).
 
 ### Out of Scope:
 -   Support for arbitrary XML or JSON structures.
@@ -37,6 +37,7 @@ The scope of this project is to provide a simple and efficient tool for converti
 -   **FR-008**: The user interface shall provide buttons to trigger the conversion process.
 -   **FR-009**: The user interface shall display the output of the conversion in a read-only field.
 -   **FR-010**: The user interface shall provide a button to copy the output to the clipboard.
+-   **FR-011**: The user interface shall provide a dropdown menu to select the data type for conversion (e.g., "Personal Data" or "IT Data").
 
 ## 4. Non-Functional Requirements
 
@@ -72,13 +73,16 @@ The system is based on a client-server architecture.
 -   **Technology**: Python, Flask
 -   **Structure**: A Flask web server that exposes a RESTful API.
 -   **Endpoints**:
-    -   `POST /xml-to-json`: Accepts XML data and returns JSON.
-    -   `POST /json-to-xml`: Accepts JSON data and returns XML.
+    -   `POST /personal/xml-to-json`: Accepts XML for personal data and returns JSON.
+    -   `POST /personal/json-to-xml`: Accepts JSON for personal data and returns XML.
+    -   `POST /it/xml-to-json`: Accepts XML for IT data and returns JSON.
+    -   `POST /it/json-to-xml`: Accepts JSON for IT data and returns XML.
 -   **Modules**:
-    -   `main.py`: The main entry point of the Flask application.
-    -   `personal_data.py`: Defines the data model and the conversion logic (pure Python).
-    -   `main_with_libs.py`: An alternative entry point that uses a library-based approach for conversion.
-    -   `personal_data_libs.py`: A version of the data model that uses `dataclasses` and the `xmltodict` library.
+    -   `main.py`: The main entry point of the Flask application, containing all endpoints.
+    -   `personal_data_libs.py`: Defines the data model and conversion logic for `FullPersonalData`.
+    -   `it_data_libs.py`: Defines the data model and conversion logic for `ITData`.
+    -   `personal_data.py`: (Legacy) Defines the data model with manual parsing.
+    -   `main_with_libs.py`: (Legacy) An alternative entry point.
 
 ## 6. Data Model
 
@@ -106,3 +110,30 @@ The application uses a predefined data model to represent personal information.
 -   `work` (object of type `Work`)
 
 This structure is used for both XML and JSON data, with the root element in XML being `<root>`.
+
+## 7. IT Data Model
+
+The application also supports a data model for IT-related information, including computers and projects.
+
+### 7.1. `Computer`
+-   `type` (string) - e.g., "laptop", "desktop"
+-   `brand` (string)
+-   `model` (string)
+-   `cpu` (string)
+-   `ram_gb` (integer)
+-   `storage_gb` (integer)
+-   `os` (string)
+
+### 7.2. `ITProject`
+-   `project_name` (string)
+-   `start_date` (string)
+-   `end_date` (string)
+-   `team_size` (integer)
+-   `technologies` (list of strings)
+-   `description` (string)
+
+### 7.3. `ITData`
+-   `computers` (list of `Computer` objects)
+-   `it_projects` (list of `ITProject` objects)
+
+This structure is also rooted under a `<root>` element in XML.

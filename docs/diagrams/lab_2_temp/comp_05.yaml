@@ -1,0 +1,31 @@
+graph TD
+    %% Front‑end layer
+    subgraph Frontend
+        UI[UI Layer]
+        State[State Management]
+    end
+
+    %% Back‑end layer
+    subgraph Backend
+        API[API Gateway]
+        Auth[Auth Service]
+        Business[Business Service]
+        DB[(Database)]
+    end
+
+    %% External services
+    subgraph External
+        Email[Email Service]
+        Cache[Cache]
+    end
+
+    %% Connections
+    UI -->|calls| API
+    UI -->|reads| State
+    State -->|updates| API
+    API --> Auth
+    API --> Business
+    Business --> DB
+    Business --> Cache
+    Auth --> DB
+    Business --> Email

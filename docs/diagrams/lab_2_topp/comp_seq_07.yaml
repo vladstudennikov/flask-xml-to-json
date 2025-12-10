@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Client as Browser Client
+    participant App as Flask Server (main.py)
+    participant DataSvc as personal_data.py
+    participant Utils as personal_data_libs.py
+    participant View as templates/index.html
+ 
+    Client->>App: HTTP GET /
+    activate App
+ 
+    App->>DataSvc: fetch_personal_data()
+    activate DataSvc
+ 
+    DataSvc->>Utils: utilize helper methods
+    activate Utils
+    Utils-->>DataSvc: structured data objects
+    deactivate Utils
+ 
+    DataSvc-->>App: user data dictionary
+    deactivate DataSvc
+ 
+    App->>View: render_template(user_data)
+    activate View
+    View-->>App: compiled HTML
+    deactivate View
+ 
+    App-->>Client: 200 OK with HTML content
+    deactivate App
+
+graph TD
+    %% Components
+    Client[Browser Client]:::client
+    Server[Flask Server<br/>main.py]:::server
+    DataService[Data Service<br/>personal_data.py]:::module
+    Utilities[Utility Functions<br/>personal_data_libs.py]:::module
+    ViewTemplate[View Template<br/>templates/index.html]:::resource
+    Assets[Static Resources<br/>static/*.css, *.js]:::resource
+ 
+    %% Flow
+    Client -->|sends request| Server
+    Server -->|fetches from| DataService
+    DataService -->|leverages| Utilities
+    Server -->|populates| ViewTemplate
+    Server -->|delivers| Assets
+ 
+    %% Styles
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px
+    classDef server fill:#bbf,stroke:#333,stroke-width:2px
+    classDef module fill:#dfd,stroke:#333,stroke-width:2px
+    classDef resource fill:#ffd,stroke:#333,stroke-width:2px

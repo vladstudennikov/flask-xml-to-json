@@ -1,0 +1,18 @@
+graph TD
+    %% UI layer
+    UI[User Interface] --> B[Browser / App Runtime]
+    
+    %% Load balancer in front of the API
+    B --> LB[Load Balancer]
+    
+    %% API layer
+    LB --> API[API Gateway / HTTP Server]
+    
+    %% Services
+    API --> AUTH[Authentication Service]
+    API --> SVC[Business Logic Service]
+    
+    %% Data & infrastructure
+    SVC --> DB[(Database)]
+    SVC --> CACHE[Cache Redis/Memcached]
+    SVC --> MQ[Message Queue RabbitMQ/Kafka]

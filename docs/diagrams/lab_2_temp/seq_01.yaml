@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant User
+    participant UI as "Web / Mobile UI"
+    participant Auth as "Auth Service"
+    participant API as "API Gateway"
+    participant Data as "Data Service"
+    participant DB as "Database"
+
+    User->>UI: Open application
+    UI->>Auth: Request login (credentials)
+    Auth-->>UI: Auth token (JWT)
+    UI->>API: Call /initialize with token
+    API->>Data: Validate token & fetch user profile
+    Data-->>API: User profile data
+    API-->>UI: Init payload
+    UI->>User: Show dashboard
+
+    User->>UI: Perform action (e.g., create item)
+    UI->>API: POST /items (token + payload)
+    API->>Data: Create item in DB
+    Data-->>API: Confirmation + new item ID
+    API-->>UI: Success response
+    UI->>User: Show new item in list

@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant User
+    participant Frontend as Web UI
+    participant API as Backend API
+    participant Auth as Auth Service
+    participant DB as Database
+
+    User->>Frontend: Open application (login page)
+    Frontend->>Auth: Request authentication token
+    Auth-->>Frontend: Return token (or error)
+    Frontend->>API: Send login request (token)
+    API->>DB: Verify credentials
+    DB-->>API: User record
+    API-->>Frontend: Login success + session data
+    Frontend->>User: Show dashboard
+
+    User->>Frontend: Perform action (e.g., create item)
+    Frontend->>API: POST /items (session token)
+    API->>DB: INSERT new item
+    DB-->>API: Confirmation
+    API-->>Frontend: Item created response
+    Frontend->>User: Update UI with new item
+
+    User->>Frontend: Logout
+    Frontend->>API: POST /logout
+    API->>Auth: Invalidate token
+    Auth-->>API: Confirmation
+    API-->>Frontend: Logout success
+    Frontend->>User: Return to login screen

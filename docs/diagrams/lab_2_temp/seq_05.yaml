@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant User
+    participant UI as UI
+    participant Auth as AuthService
+    participant API as APIGateway
+    participant Service as BusinessService
+    participant DB as Database
+
+    User->>UI: Open app
+    UI->>Auth: Login (credentials)
+    Auth-->>UI: JWT token
+    UI->>API: Request init data (token)
+    API->>Service: Get user profile
+    Service->>DB: Query user info
+    DB-->>Service: User data
+    Service-->>API: User data
+    API-->>UI: Init payload
+    UI->>User: Show dashboard
+
+    User->>UI: Create new item
+    UI->>API: POST /items (token, payload)
+    API->>Service: Create item
+    Service->>DB: Insert item
+    DB-->>Service: Item ID
+    Service-->>API: Success response
+    API-->>UI: Item created
+    UI->>User: Update list view
+
+    User->>UI: Logout
+    UI->>Auth: Invalidate token
+    Auth-->>UI: Confirmation
+    UI->>User: Logged out
