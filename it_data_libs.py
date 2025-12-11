@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, field
 from typing import List
-import xmltodict # type: ignore
+import xmltodict  # type: ignore
 import json
 
 
@@ -34,39 +34,118 @@ class ITData:
         return asdict(self)
 
     def to_xml(self):
-        return xmltodict.unparse({"root": asdict(self)}, pretty=True)
+        data = asdict(self)
+
+        xml_ready = {"root": {}}
+
+        # Computers: <computers><computer>...</computer>...</computers>
+        comps = data.get("computers", [])
+        xml_ready["root"]["computers"] = {"computer": comps if comps else []}
+
+        # Projects: technologies become repeated <technology> tags
+        projects = []
+        for pr in data.get("it_projects", []):
+            pr_copy = dict(pr)
+            techs = pr_copy.get("technologies", [])
+            pr_copy["technologies"] = {"technology": techs if techs else []}
+            projects.append(pr_copy)
+        xml_ready["root"]["it_projects"] = {"project": projects if projects else []}
+
+        return xmltodict.unparse(xml_ready, pretty=True)
+
+    @staticmethod
+    def _to_int_safe(value):
+        """
+        Convert value to int if possible; if value is None or empty, return 0.
+        If it's already int, return as is.
+        """
+        if isinstance(value, int):
+            return value
+        if value is None:
+            return 0
+        s = str(value).strip()
+        if s == "":
+            return 0
+        try:
+            return int(s)
+        except ValueError:
+            # If conversion fails, re-raise so developer notices invalid input shapes
+            raise
 
     @staticmethod
     def from_dict(data: dict):
-        computers_data = data.get("computers", [])
-        projects_data = data.get("it_projects", [])
+        # Defensive shallow copy
+        data = dict(data)
 
-        # Handle case where there's only one item and it's not a list
-        if not isinstance(computers_data, list):
-            computers_data = [computers_data]
-        if not isinstance(projects_data, list):
-            projects_data = [projects_data]
+        # --- Computers ---
+        comps = data.get("computers", [])
+        if isinstance(comps, dict) and "computer" in comps:
+            comps_list = comps["computer"]
+        else:
+            comps_list = comps
 
-        computers = [Computer(**c) for c in computers_data]
-        it_projects = []
-        for p in projects_data:
-            techs = p.get("technologies")
-            if techs:
-                if isinstance(techs, dict):
-                    techs = techs.get("technology", [])
-                if not isinstance(techs, list):
-                    techs = [techs]
+        if not isinstance(comps_list, list):
+            comps_list = [comps_list] if comps_list else []
+
+        computers: List[Computer] = []
+        for c in comps_list:
+            # Ensure we don't mutate caller dict
+            c_copy = dict(c)
+            # Normalize numeric fields: ram_gb, storage_gb
+            if "ram_gb" in c_copy:
+                c_copy["ram_gb"] = ITData._to_int_safe(c_copy["ram_gb"])
             else:
-                techs = []
-            p["technologies"] = techs
-            it_projects.append(ITProject(**p))
+                c_copy["ram_gb"] = 0
+            if "storage_gb" in c_copy:
+                c_copy["storage_gb"] = ITData._to_int_safe(c_copy["storage_gb"])
+            else:
+                c_copy["storage_gb"] = 0
+            computers.append(Computer(**c_copy))
+
+        # --- Projects ---
+        projects_block = data.get("it_projects", [])
+        if isinstance(projects_block, dict) and "project" in projects_block:
+            projects_list = projects_block["project"]
+        else:
+            projects_list = projects_block
+
+        if not isinstance(projects_list, list):
+            projects_list = [projects_list] if projects_list else []
+
+        it_projects: List[ITProject] = []
+        for p in projects_list:
+            p_copy = dict(p)
+
+            techs = p_copy.get("technologies", [])
+            if isinstance(techs, dict) and "technology" in techs:
+                techs_val = techs["technology"]
+            else:
+                techs_val = techs
+
+            if isinstance(techs_val, list):
+                techs_normalized = techs_val
+            elif techs_val is None or techs_val == "":
+                techs_normalized = []
+            else:
+                techs_normalized = [techs_val]
+
+            p_copy["technologies"] = techs_normalized
+
+            # Normalize numeric team_size
+            if "team_size" in p_copy:
+                p_copy["team_size"] = ITData._to_int_safe(p_copy["team_size"])
+            else:
+                p_copy["team_size"] = 0
+
+            it_projects.append(ITProject(**p_copy))
 
         return ITData(computers=computers, it_projects=it_projects)
 
     @staticmethod
     def from_xml(xml_data: str):
-        data = xmltodict.parse(xml_data).get("root", {})
-        return ITData.from_dict(data)
+        parsed = xmltodict.parse(xml_data)
+        root = parsed.get("root", {})
+        return ITData.from_dict(root)
 
     @staticmethod
     def xml_to_json(xml_data: str):
@@ -76,8 +155,9 @@ class ITData:
     def json_to_xml(json_data: dict):
         return ITData.from_dict(json_data).to_xml()
 
+
 if __name__ == '__main__':
-    # Example usage
+    # Quick manual check
     computers = [
         Computer("laptop", "Dell", "XPS 15", "Intel Core i9", 32, 1024, "Windows 11"),
         Computer("desktop", "Apple", "iMac 24", "Apple M1", 16, 512, "macOS")
